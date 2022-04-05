@@ -1,11 +1,20 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
-using TollFeeCalculator;
+using System.Linq;
+using System.Threading.Tasks;
+using TollCalculator.Interface;
+using TollCalculator.Models;
 
 namespace TollCalculator
 {
     public class TollCalculator
     {
+        private readonly IHolidayService _holidayService;
+        public TollCalculator(IHolidayService holidayService)
+        {
+            _holidayService = holidayService;
+        }
 
         /**
          * Calculate the total toll fee for one day
@@ -15,13 +24,13 @@ namespace TollCalculator
          * @return - the total toll fee for that day
          */
 
-        public int GetTollFee(Vehicle vehicle, DateTime[] dates)
+        public int GetVehicleTollFee(IVehicle vehicle, DateTime[] dates)
         {
             DateTime intervalStart = dates[0];
             int totalFee = 0;
             foreach (DateTime date in dates)
             {
-                int nextFee = GetTollFee(date, vehicle);
+                int nextFee = GetTollFee(date,vehicle);
                 int tempFee = GetTollFee(intervalStart, vehicle);
 
                 long diffInMillies = date.Millisecond - intervalStart.Millisecond;
@@ -42,7 +51,7 @@ namespace TollCalculator
             return totalFee;
         }
 
-        private bool IsTollFreeVehicle(Vehicle vehicle)
+        private bool IsTollFreeVehicle(IVehicle vehicle)
         {
             if (vehicle == null) return false;
             string vehicleType = vehicle.GetVehicleType();
@@ -54,9 +63,9 @@ namespace TollCalculator
                    vehicleType.Equals(TollFreeVehicles.Military.ToString());
         }
 
-        public int GetTollFee(DateTime date, Vehicle vehicle)
+        public int GetTollFee(DateTime date, IVehicle vehicle)
         {
-            if (IsTollFreeDate(date) || IsTollFreeVehicle(vehicle)) return 0;
+            if (IsTollFreeDate(date).Result || IsTollFreeVehicle(vehicle)) return 0;
 
             int hour = date.Hour;
             int minute = date.Minute;
@@ -73,28 +82,15 @@ namespace TollCalculator
             else return 0;
         }
 
-        private bool IsTollFreeDate(DateTime date)
+        private async Task<bool> IsTollFreeDate(DateTime date)
         {
-            int year = date.Year;
-            int month = date.Month;
-            int day = date.Day;
+            var holidays = await _holidayService.GetHolidays();
+            var holidayDates = holidays.Select(day => day.Date);
+            var daysBoforeHoliday = await _holidayService.GetDayBeforeHoliday();
 
-            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) return true;
+            if ((date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) ||
+            (holidayDates.Contains(date) || daysBoforeHoliday.Contains(date))) return true;
 
-            if (year == 2013)
-            {
-                if (month == 1 && day == 1 ||
-                    month == 3 && (day == 28 || day == 29) ||
-                    month == 4 && (day == 1 || day == 30) ||
-                    month == 5 && (day == 1 || day == 8 || day == 9) ||
-                    month == 6 && (day == 5 || day == 6 || day == 21) ||
-                    month == 7 ||
-                    month == 11 && day == 1 ||
-                    month == 12 && (day == 24 || day == 25 || day == 26 || day == 31))
-                {
-                    return true;
-                }
-            }
             return false;
         }
 

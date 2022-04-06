@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using TollCalculator.Interface;
-using TollCalculator.Models;
 
 namespace TollCalculator
 {
@@ -50,22 +49,9 @@ namespace TollCalculator
             if (totalFee > 60) totalFee = 60;
             return totalFee;
         }
-
-        private bool IsTollFreeVehicle(IVehicle vehicle)
-        {
-            if (vehicle == null) return false;
-            string vehicleType = vehicle.GetVehicleType();
-            return vehicleType.Equals(TollFreeVehicles.Motorbike.ToString()) ||
-                   vehicleType.Equals(TollFreeVehicles.Tractor.ToString()) ||
-                   vehicleType.Equals(TollFreeVehicles.Emergency.ToString()) ||
-                   vehicleType.Equals(TollFreeVehicles.Diplomat.ToString()) ||
-                   vehicleType.Equals(TollFreeVehicles.Foreign.ToString()) ||
-                   vehicleType.Equals(TollFreeVehicles.Military.ToString());
-        }
-
         public int GetTollFee(DateTime date, IVehicle vehicle)
         {
-            if (IsTollFreeDate(date).Result || IsTollFreeVehicle(vehicle)) return 0;
+            if (IsTollFreeDate(date).Result || vehicle.IsTollFree()) return 0;
 
             int hour = date.Hour;
             int minute = date.Minute;
@@ -82,26 +68,25 @@ namespace TollCalculator
             else return 0;
         }
 
+        private bool IsBetween(DateTime entryTime, string startTime, string endTime)
+        {
+            TimeSpan start = TimeSpan.Parse(startTime);
+            TimeSpan end = TimeSpan.Parse(endTime);
+            TimeSpan now = entryTime.TimeOfDay;
+
+            return (now >= start) && (now <= end);
+        }
+
         private async Task<bool> IsTollFreeDate(DateTime date)
         {
             var holidays = await _holidayService.GetHolidays();
-            var holidayDates = holidays.Select(day => day.Date);
+            var holidayDates = holidays.Select(day => day).ToList();
             var daysBoforeHoliday = await _holidayService.GetDayBeforeHoliday();
 
             if ((date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) ||
             (holidayDates.Contains(date) || daysBoforeHoliday.Contains(date))) return true;
 
             return false;
-        }
-
-        private enum TollFreeVehicles
-        {
-            Motorbike = 0,
-            Tractor = 1,
-            Emergency = 2,
-            Diplomat = 3,
-            Foreign = 4,
-            Military = 5
         }
     }
 }

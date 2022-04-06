@@ -11,3 +11,14 @@ C:\Users\User\source\repos\TollCalculator\obj\Debug\netcoreapp3.1\TollCalculator
 C:\Users\User\source\repos\TollCalculator\obj\Debug\netcoreapp3.1\TollCalculator.dll
 C:\Users\User\source\repos\TollCalculator\obj\Debug\netcoreapp3.1\TollCalculator.pdb
 C:\Users\User\source\repos\TollCalculator\obj\Debug\netcoreapp3.1\TollCalculator.genruntimeconfig.cache
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\System.Net.Http.Formatting.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.Abstractions.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.FileExtensions.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Configuration.Json.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.FileProviders.Abstractions.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.FileProviders.Physical.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.FileSystemGlobbing.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Microsoft.Extensions.Primitives.dll
+C:\Users\User\source\repos\TollCalculator\bin\Debug\netcoreapp3.1\Newtonsoft.Json.dll
+C:\Users\User\source\repos\TollCalculator\obj\Debug\netcoreapp3.1\TollCalculator.csproj.CopyComplete

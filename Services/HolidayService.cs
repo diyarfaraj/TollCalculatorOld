@@ -1,7 +1,10 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 using TollCalculator.Interface;
 using TollCalculator.Models;
@@ -16,27 +19,27 @@ namespace TollCalculator.Services
             _httpClient = httpClient;
         }
 
-        public async  Task<List<DateTime>> GetDayBeforeHoliday()
+        public async Task<List<DateTime>> GetDayBeforeHoliday()
         {
             List<DateTime> preHolidays = new List<DateTime>();
             var holidays = await GetHolidays();
             foreach (var day in holidays)
             {
-                preHolidays.Add(day.Date.AddDays(-1));
+                preHolidays.Add(day.AddDays(-1));
             }
             return preHolidays;
 
         }
 
-        public async Task<List<Holiday>> GetHolidays()
+        public async Task<List<DateTime>> GetHolidays()
         {
-            var apiKey = ConfigurationManager.AppSetting["ApiKey"];
-            var countryCode = ConfigurationManager.AppSetting["CountryCode"];
-            var currentYear = DateTime.Now.ToString("yy");
-            string URL = string.Format("https://calendarific.com/api/v2/holidays?&api_key={0}&country={1}&year={2}", apiKey, countryCode, currentYear);
-
             try
             {
+                var apiKey = ConfigurationManager.AppSetting["HolidayApiSettings:ApiKey"];
+                var countryCode = ConfigurationManager.AppSetting["HolidayApiSettings:CountryCode"];
+                var currentYear = DateTime.Now.ToString("yyyy");
+                string URL = string.Format("https://calendarific.com/api/v2/holidays?&api_key={0}&country={1}&year={2}", apiKey, countryCode, currentYear);
+
                 List<Holiday> holidays;
                 _httpClient.BaseAddress = new Uri(URL);
                 HttpResponseMessage response = await _httpClient.GetAsync("");
@@ -44,14 +47,22 @@ namespace TollCalculator.Services
                 {
                     throw new HttpRequestException("api call failed");
                 }
-                holidays = response.Content.ReadAsAsync<List<Holiday>>().Result;
+                var jsonString = await response.Content.ReadAsStringAsync();
 
-                return holidays;
+                dynamic responseData = JsonConvert.DeserializeObject<Holiday>(jsonString);
+                return responseData;
             }
-            catch (Exception)
+            catch (Exception e)
             {
 
-                throw new HttpRequestException("api failed");
+                Console.WriteLine(e.Message);
+                return null;
+            }
+
+            static Holiday Deserialize<Holiday>(string json)
+            {
+                Newtonsoft.Json.JsonSerializer s = new Newtonsoft.Json.JsonSerializer();
+                return s.Deserialize<Holiday>(new JsonTextReader(new StringReader(json)));
             }
         }
     }

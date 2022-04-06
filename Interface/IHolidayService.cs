@@ -8,7 +8,7 @@ namespace TollCalculator.Interface
 {
     public interface IHolidayService
     {
-        Task<List<Holiday>> GetHolidays();
+        Task<List<DateTime>> GetHolidays();
         Task<List<DateTime>> GetDayBeforeHoliday();
     }
 }

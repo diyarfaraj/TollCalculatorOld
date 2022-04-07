@@ -51,21 +51,20 @@ namespace TollCalculator
         }
         public int GetTollFee(DateTime date, IVehicle vehicle)
         {
-            if (IsTollFreeDate(date).Result || vehicle.IsTollFree()) return 0;
+            if (vehicle.IsTollFree()) return 0;
 
-            int hour = date.Hour;
-            int minute = date.Minute;
+            if (IsBetween(date, "06:00", "06:29")) return 8;
+            if (IsBetween(date, "06:30", "06:59")) return 13;
+            if (IsBetween(date, "07:00", "07:59")) return 18;
+            if (IsBetween(date, "08:00", "08:29")) return 13;
+            if (IsBetween(date, "08:30", "14:59")) return 8;
+            if (IsBetween(date, "15:00", "15:29")) return 13;
+            if (IsBetween(date, "15:30", "16:59")) return 18;
+            if (IsBetween(date, "17:00", "17:59")) return 13;
+            if (IsBetween(date, "18:00", "18:29")) return 8;
+            if (IsBetween(date, "18:30", "05:59")) return 0;
 
-            if (hour == 6 && minute >= 0 && minute <= 29) return 8;
-            else if (hour == 6 && minute >= 30 && minute <= 59) return 13;
-            else if (hour == 7 && minute >= 0 && minute <= 59) return 18;
-            else if (hour == 8 && minute >= 0 && minute <= 29) return 13;
-            else if (hour >= 8 && hour <= 14 && minute >= 30 && minute <= 59) return 8;
-            else if (hour == 15 && minute >= 0 && minute <= 29) return 13;
-            else if (hour == 15 && minute >= 0 || hour == 16 && minute <= 59) return 18;
-            else if (hour == 17 && minute >= 0 && minute <= 59) return 13;
-            else if (hour == 18 && minute >= 0 && minute <= 29) return 8;
-            else return 0;
+            return 0;
         }
 
         private bool IsBetween(DateTime entryTime, string startTime, string endTime)
@@ -79,14 +78,24 @@ namespace TollCalculator
 
         private async Task<bool> IsTollFreeDate(DateTime date)
         {
-            var holidays = await _holidayService.GetHolidays();
-            var holidayDates = holidays.Select(day => day).ToList();
-            var daysBoforeHoliday = await _holidayService.GetDayBeforeHoliday();
+            try
+            {
+                var holidays = await _holidayService.GetHolidays();
+                var holidayDates = holidays.Select(day => day).ToList();
+                var daysBoforeHoliday = await _holidayService.GetDayBeforeHoliday();
 
-            if ((date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) ||
-            (holidayDates.Contains(date) || daysBoforeHoliday.Contains(date))) return true;
+                if ((date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday) ||
+                (holidayDates.Contains(date) || daysBoforeHoliday.Contains(date))) return true;
 
-            return false;
+                return false;
+            }
+            catch (Exception e)
+            {
+                //Add proper exception handling
+                Console.WriteLine(e.Message);
+                return false;
+            }
+           
         }
     }
 }

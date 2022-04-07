@@ -33,37 +33,23 @@ namespace TollCalculator.Services
 
         public async Task<List<DateTime>> GetHolidays()
         {
-            try
+            var apiKey = ConfigurationManager.AppSetting["HolidayApiSettings:ApiKey"];
+            var countryCode = ConfigurationManager.AppSetting["HolidayApiSettings:CountryCode"];
+            var currentYear = DateTime.Now.ToString("yyyy");
+            string URL = string.Format("https://calendarific.com/api/v2/holidays?&api_key={0}&country={1}&year={2}", apiKey, countryCode, currentYear);
+
+            List<Holiday> holidays;
+            _httpClient.BaseAddress = new Uri(URL);
+            HttpResponseMessage response = await _httpClient.GetAsync("");
+            if (!response.IsSuccessStatusCode)
             {
-                var apiKey = ConfigurationManager.AppSetting["HolidayApiSettings:ApiKey"];
-                var countryCode = ConfigurationManager.AppSetting["HolidayApiSettings:CountryCode"];
-                var currentYear = DateTime.Now.ToString("yyyy");
-                string URL = string.Format("https://calendarific.com/api/v2/holidays?&api_key={0}&country={1}&year={2}", apiKey, countryCode, currentYear);
-
-                List<Holiday> holidays;
-                _httpClient.BaseAddress = new Uri(URL);
-                HttpResponseMessage response = await _httpClient.GetAsync("");
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new HttpRequestException("api call failed");
-                }
-                var jsonString = await response.Content.ReadAsStringAsync();
-
-                dynamic responseData = JsonConvert.DeserializeObject<Holiday>(jsonString);
-                return responseData;
+                throw new HttpRequestException("api call failed");
             }
-            catch (Exception e)
-            {
+            var jsonString = await response.Content.ReadAsStringAsync();
 
-                Console.WriteLine(e.Message);
-                return null;
-            }
+            dynamic responseData = JsonConvert.DeserializeObject<Holiday>(jsonString);
+            return responseData;
 
-            static Holiday Deserialize<Holiday>(string json)
-            {
-                Newtonsoft.Json.JsonSerializer s = new Newtonsoft.Json.JsonSerializer();
-                return s.Deserialize<Holiday>(new JsonTextReader(new StringReader(json)));
-            }
         }
     }
 }
